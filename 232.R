@@ -99,3 +99,67 @@ rcbd$treat <- as.factor(rcbd$treat)
 rcbd$block <- as.factor(rcbd$block)
 analysis_rcbd <- aov(raw_data ~ treat + block, rcbd)
 summary(analysis_rcbd)
+
+
+
+# LSD
+treat = c("B", "D", "C", "A", "C", "A", "D", "B", "A", "C", "B", "D", "D", "B", "A", "C")  # Treatments
+obs = c(1.64, 1.210, 1.425, 1.345, 1.475, 1.185, 1.4, 1.29, 1.670, 0.710, 1.665, 1.18, 1.565, 1.290, 1.655, 0.66)  # Observations
+rows <- rep(1:4, each = 4)
+cols <- rep(1:4, times = 4)
+
+
+data <- data.frame(obs, treat, rows, cols)
+data
+t <- 4
+r <- 4
+c <- 4
+
+N <- length(obs)
+
+cf <- sum(obs) ^ 2 / N
+sstot <- sum(obs ^ 2) - cf
+treat.sum <- tapply(obs, treat, sum)
+r.sum <- tapply(obs, rows, sum)
+c.sum <- tapply(obs, cols, sum)
+
+sst <- sum((treat.sum ^ 2) / 4) - cf
+
+ssr <- sum((r.sum ^ 2) / 4) - cf
+
+ssc <- sum((c.sum ^ 2) / 4) - cf
+
+sse <- sstot - sst - ssr - ssc
+
+dft <- t - 1
+dfr <- r - 1
+dfc <- c - 1
+dfe <-3 * 2
+mst <- sst / dft 
+msr <- ssr / dfr
+msc <- ssc / dfc
+
+mse <- sse / dfe
+
+
+f.t <- sst / mse
+f.r <- ssr / mse
+f.c <- ssc / mse
+
+f1 <- qf(0.05, dft, dfe)
+f2 <- qf(0.05, dfr, dfe)
+f3 <- qf(0.05, dfc, dfe)
+cat(f.t, f.r, f.c)
+
+
+ifelse(f.t > f1, 'Block hypothesis rejected', 'May not Reject Block hypothesis')
+ifelse(f.r > f2, 'Block hypothesis rejected', 'May not Reject Block hypothesis')
+ifelse(f.c > f3, 'Block hypothesis rejected', 'May not Reject Block hypothesis')
+
+
+data$treat <- as.factor(data$treat)
+data$rows <- as.factor(data$rows)
+data$cols <- as.factor(data$cols)
+
+anal <- aov(obs  ~ treat + rows + cols, data)
+summary(anal)
